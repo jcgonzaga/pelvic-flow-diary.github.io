@@ -1,0 +1,104 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Slider } from '@/components/ui/slider';
+import { UrgencyRecord } from '@/types/record';
+
+const REACHED_OPTIONS = [
+  { value: 'yes', label: '✅ Sí, a tiempo' },
+  { value: 'no', label: '❌ No llegué' },
+  { value: 'leakage', label: '💦 Hubo pérdida' },
+];
+
+const WARNING_TIME_OPTIONS = [
+  { value: '<10', label: '⚡ Menos de 10 seg' },
+  { value: '10-30', label: '⏱️ 10-30 seg' },
+  { value: '30-60', label: '⏰ 30-60 seg' },
+  { value: '>60', label: '🕐 Más de 60 seg' },
+];
+
+interface UrgencyFormProps {
+  onSave: (data: Omit<UrgencyRecord, 'id' | 'timestamp' | 'date' | 'time'>) => void;
+  onCancel: () => void;
+}
+
+export function UrgencyForm({ onSave, onCancel }: UrgencyFormProps) {
+  const [intensity, setIntensity] = useState([5]);
+  const [reachedBathroom, setReachedBathroom] = useState<UrgencyRecord['reachedBathroom']>('yes');
+  const [warningTime, setWarningTime] = useState<UrgencyRecord['warningTime']>('30-60');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      type: 'urgency',
+      intensity: intensity[0],
+      reachedBathroom,
+      warningTime,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+      <div>
+        <Label className="text-lg font-semibold mb-3 block">
+          Intensidad de la urgencia: {intensity[0]} / 10
+        </Label>
+        <Slider
+          value={intensity}
+          onValueChange={setIntensity}
+          min={1}
+          max={10}
+          step={1}
+          className="py-4"
+        />
+        <div className="flex justify-between text-sm text-muted-foreground mt-2">
+          <span>😌 Leve</span>
+          <span>😰 Moderada</span>
+          <span>😱 Muy fuerte</span>
+        </div>
+      </div>
+
+      <div>
+        <Label className="text-lg font-semibold mb-3 block">¿Conseguiste llegar al baño?</Label>
+        <RadioGroup value={reachedBathroom} onValueChange={(v) => setReachedBathroom(v as any)}>
+          <div className="grid gap-3">
+            {REACHED_OPTIONS.map(option => (
+              <div key={option.value} className="flex items-center space-x-3 border-2 rounded-lg p-4 hover:bg-muted/50">
+                <RadioGroupItem value={option.value} id={`reached-${option.value}`} />
+                <Label htmlFor={`reached-${option.value}`} className="cursor-pointer text-lg flex-1">
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </RadioGroup>
+      </div>
+
+      <div>
+        <Label className="text-lg font-semibold mb-3 block">Tiempo de aviso</Label>
+        <RadioGroup value={warningTime} onValueChange={(v) => setWarningTime(v as any)}>
+          <div className="grid grid-cols-2 gap-3">
+            {WARNING_TIME_OPTIONS.map(option => (
+              <div key={option.value} className="flex items-center space-x-2 border-2 rounded-lg p-3 hover:bg-muted/50">
+                <RadioGroupItem value={option.value} id={`time-${option.value}`} />
+                <Label htmlFor={`time-${option.value}`} className="cursor-pointer text-base flex-1">
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </RadioGroup>
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} className="flex-1 h-14 text-lg">
+          Cancelar
+        </Button>
+        <Button type="submit" className="flex-1 h-14 text-lg bg-urgency hover:bg-urgency/90 text-urgency-foreground">
+          💾 Guardar
+        </Button>
+      </div>
+    </form>
+  );
+}
