@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Droplet, AlertCircle, Zap, Bandage, Share2, Plus } from 'lucide-react';
+import { Droplet, AlertCircle, Zap, Bandage, Share2, Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RecordTypeCard } from '@/components/RecordTypeCard';
@@ -11,6 +11,7 @@ import { PadUseForm } from '@/components/forms/PadUseForm';
 import { RecordsList } from '@/components/RecordsList';
 import { DailySummary } from '@/components/DailySummary';
 import { ExportDialog } from '@/components/ExportDialog';
+import { ImportDialog } from '@/components/ImportDialog';
 import { useRecords } from '@/hooks/useRecords';
 import { RecordType } from '@/types/record';
 import { toast } from 'sonner';
@@ -21,7 +22,8 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<DialogType>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const { records, addRecord, deleteRecord, getDailySummary } = useRecords();
+  const [importOpen, setImportOpen] = useState(false);
+  const { records, addRecord, importRecords, deleteRecord, getDailySummary } = useRecords();
 
   const today = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const summary = getDailySummary(today);
@@ -151,16 +153,40 @@ const Index = () => {
           </section>
         )}
 
-        {/* Export Button */}
+        {/* Export and Import Buttons */}
         {records.length > 0 && (
-          <section className="animate-fade-in">
+          <section className="animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-3">
             <Button
               onClick={() => setExportOpen(true)}
-              className="w-full h-16 text-lg bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity"
+              className="h-16 text-lg bg-gradient-to-r from-primary to-secondary hover:opacity-90 transition-opacity"
               size="lg"
             >
               <Share2 className="w-6 h-6 mr-2" />
-              Exportar y Compartir Datos
+              Exportar y Compartir
+            </Button>
+            <Button
+              onClick={() => setImportOpen(true)}
+              variant="outline"
+              className="h-16 text-lg border-2"
+              size="lg"
+            >
+              <Upload className="w-6 h-6 mr-2" />
+              Importar Datos
+            </Button>
+          </section>
+        )}
+
+        {/* Import Only Button (when no records) */}
+        {records.length === 0 && (
+          <section className="animate-fade-in">
+            <Button
+              onClick={() => setImportOpen(true)}
+              variant="outline"
+              className="w-full h-16 text-lg border-2"
+              size="lg"
+            >
+              <Upload className="w-6 h-6 mr-2" />
+              Importar Datos desde CSV
             </Button>
           </section>
         )}
@@ -193,6 +219,9 @@ const Index = () => {
 
       {/* Export Dialog */}
       <ExportDialog open={exportOpen} onOpenChange={setExportOpen} records={records} />
+
+      {/* Import Dialog */}
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} onImport={importRecords} />
 
       {/* Floating Action Button (Mobile) */}
       <Button

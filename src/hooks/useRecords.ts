@@ -38,6 +38,21 @@ export function useRecords() {
     return newRecord;
   };
 
+  const importRecords = (importedRecords: Omit<Record, 'id'>[]) => {
+    const newRecords: Record[] = importedRecords.map(record => ({
+      ...record,
+      id: crypto.randomUUID(),
+    } as Record));
+
+    setRecords(prev => {
+      const allRecords = [...prev, ...newRecords];
+      // Sort by timestamp descending
+      return allRecords.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    });
+  };
+
   const deleteRecord = (id: string) => {
     setRecords(prev => prev.filter(r => r.id !== id));
   };
@@ -67,6 +82,7 @@ export function useRecords() {
   return {
     records,
     addRecord,
+    importRecords,
     deleteRecord,
     getRecordsByDate,
     getTodayRecords,
