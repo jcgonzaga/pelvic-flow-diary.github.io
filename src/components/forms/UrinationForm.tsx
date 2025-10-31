@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
 import { UrinationRecord } from '@/types/record';
+import { DateTimePicker } from '@/components/DateTimePicker';
 
 const AMOUNT_OPTIONS = [
   { value: 'small', label: '🔹 Pequeña', icon: '💧' },
@@ -11,7 +13,7 @@ const AMOUNT_OPTIONS = [
 ];
 
 interface UrinationFormProps {
-  onSave: (data: Omit<UrinationRecord, 'id' | 'timestamp' | 'date' | 'time'>) => void;
+  onSave: (data: Omit<UrinationRecord, 'id' | 'timestamp' | 'date' | 'time'>, customDateTime?: { date: Date; time: string }) => void;
   onCancel: () => void;
 }
 
@@ -19,19 +21,42 @@ export function UrinationForm({ onSave, onCancel }: UrinationFormProps) {
   const [amount, setAmount] = useState<UrinationRecord['amount']>('medium');
   const [arrivedOnTime, setArrivedOnTime] = useState(true);
   const [completeEmptying, setCompleteEmptying] = useState(true);
+  const [manualDateTime, setManualDateTime] = useState(false);
+  const [dateTime, setDateTime] = useState({
+    date: new Date(),
+    time: new Date().toTimeString().slice(0, 5),
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      type: 'urination',
-      amount,
-      arrivedOnTime,
-      completeEmptying,
-    });
+    onSave(
+      {
+        type: 'urination',
+        amount,
+        arrivedOnTime,
+        completeEmptying,
+      },
+      manualDateTime ? dateTime : undefined
+    );
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+        <Label htmlFor="manual-datetime-urination" className="text-base font-medium cursor-pointer">
+          🕐 Registrar con fecha/hora manual
+        </Label>
+        <Switch
+          id="manual-datetime-urination"
+          checked={manualDateTime}
+          onCheckedChange={setManualDateTime}
+        />
+      </div>
+
+      {manualDateTime && (
+        <DateTimePicker value={dateTime} onChange={setDateTime} />
+      )}
+
       <div>
         <Label className="text-lg font-semibold mb-3 block">Cantidad aproximada</Label>
         <RadioGroup value={amount} onValueChange={(v) => setAmount(v as any)}>

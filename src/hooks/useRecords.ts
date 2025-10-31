@@ -24,17 +24,43 @@ export function useRecords() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   }, [records]);
 
-  const addRecord = (record: Omit<Record, 'id' | 'timestamp' | 'date' | 'time'>) => {
-    const now = new Date();
+  const addRecord = (
+    record: Omit<Record, 'id' | 'timestamp' | 'date' | 'time'>,
+    customDateTime?: { date: Date; time: string }
+  ) => {
+    let timestamp: Date;
+    let dateStr: string;
+    let timeStr: string;
+
+    if (customDateTime) {
+      // Crear timestamp desde fecha y hora personalizada
+      const [hours, minutes] = customDateTime.time.split(':').map(Number);
+      timestamp = new Date(customDateTime.date);
+      timestamp.setHours(hours, minutes, 0, 0);
+      dateStr = timestamp.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      timeStr = customDateTime.time;
+    } else {
+      // Usar fecha y hora actual
+      timestamp = new Date();
+      dateStr = timestamp.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      timeStr = timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    }
+
     const newRecord: Record = {
       ...record,
       id: crypto.randomUUID(),
-      timestamp: now.toISOString(),
-      date: now.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
-      time: now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: timestamp.toISOString(),
+      date: dateStr,
+      time: timeStr,
     } as Record;
 
-    setRecords(prev => [newRecord, ...prev]);
+    setRecords(prev => {
+      const allRecords = [newRecord, ...prev];
+      // Sort by timestamp descending
+      return allRecords.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    });
     return newRecord;
   };
 

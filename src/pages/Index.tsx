@@ -38,8 +38,8 @@ const Index = () => {
     setTimeout(() => setDialogType(null), 200);
   };
 
-  const handleSave = (data: any) => {
-    addRecord(data);
+  const handleSave = (data: any, customDateTime?: { date: Date; time: string }) => {
+    addRecord(data, customDateTime);
     closeDialog();
     toast.success('✅ ¡Registro guardado con éxito!', {
       description: '¡Bien hecho! 💪',

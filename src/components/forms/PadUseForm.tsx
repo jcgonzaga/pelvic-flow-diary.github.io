@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
 import { PadUseRecord } from '@/types/record';
+import { DateTimePicker } from '@/components/DateTimePicker';
 
 const PAD_TYPE_OPTIONS = [
   { value: 'pantyliner', label: '🩱 Salvaslip' },
@@ -19,25 +21,48 @@ const CONDITION_OPTIONS = [
 ];
 
 interface PadUseFormProps {
-  onSave: (data: Omit<PadUseRecord, 'id' | 'timestamp' | 'date' | 'time'>) => void;
+  onSave: (data: Omit<PadUseRecord, 'id' | 'timestamp' | 'date' | 'time'>, customDateTime?: { date: Date; time: string }) => void;
   onCancel: () => void;
 }
 
 export function PadUseForm({ onSave, onCancel }: PadUseFormProps) {
   const [padType, setPadType] = useState<PadUseRecord['padType']>('small');
   const [condition, setCondition] = useState<PadUseRecord['condition']>('dry');
+  const [manualDateTime, setManualDateTime] = useState(false);
+  const [dateTime, setDateTime] = useState({
+    date: new Date(),
+    time: new Date().toTimeString().slice(0, 5),
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      type: 'pad-use',
-      padType,
-      condition,
-    });
+    onSave(
+      {
+        type: 'pad-use',
+        padType,
+        condition,
+      },
+      manualDateTime ? dateTime : undefined
+    );
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+        <Label htmlFor="manual-datetime-pad" className="text-base font-medium cursor-pointer">
+          🕐 Registrar con fecha/hora manual
+        </Label>
+        <Switch
+          id="manual-datetime-pad"
+          checked={manualDateTime}
+          onCheckedChange={setManualDateTime}
+        />
+      </div>
+
+      {manualDateTime && (
+        <DateTimePicker value={dateTime} onChange={setDateTime} />
+      )}
+
       <div>
         <Label className="text-lg font-semibold mb-3 block">Tipo de compresa</Label>
         <RadioGroup value={padType} onValueChange={(v) => setPadType(v as any)}>

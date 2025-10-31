@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { LeakageRecord } from '@/types/record';
+import { DateTimePicker } from '@/components/DateTimePicker';
 
 const AMOUNT_OPTIONS = [
   { value: 'drops', label: '💧 Gotas' },
@@ -22,7 +24,7 @@ const CIRCUMSTANCE_OPTIONS = [
 ];
 
 interface LeakageFormProps {
-  onSave: (data: Omit<LeakageRecord, 'id' | 'timestamp' | 'date' | 'time'>) => void;
+  onSave: (data: Omit<LeakageRecord, 'id' | 'timestamp' | 'date' | 'time'>, customDateTime?: { date: Date; time: string }) => void;
   onCancel: () => void;
 }
 
@@ -30,19 +32,42 @@ export function LeakageForm({ onSave, onCancel }: LeakageFormProps) {
   const [amount, setAmount] = useState<LeakageRecord['amount']>('small');
   const [circumstance, setCircumstance] = useState<LeakageRecord['circumstance']>('none');
   const [intensity, setIntensity] = useState([3]);
+  const [manualDateTime, setManualDateTime] = useState(false);
+  const [dateTime, setDateTime] = useState({
+    date: new Date(),
+    time: new Date().toTimeString().slice(0, 5),
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      type: 'leakage',
-      amount,
-      circumstance,
-      intensity: intensity[0],
-    });
+    onSave(
+      {
+        type: 'leakage',
+        amount,
+        circumstance,
+        intensity: intensity[0],
+      },
+      manualDateTime ? dateTime : undefined
+    );
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+        <Label htmlFor="manual-datetime-leakage" className="text-base font-medium cursor-pointer">
+          🕐 Registrar con fecha/hora manual
+        </Label>
+        <Switch
+          id="manual-datetime-leakage"
+          checked={manualDateTime}
+          onCheckedChange={setManualDateTime}
+        />
+      </div>
+
+      {manualDateTime && (
+        <DateTimePicker value={dateTime} onChange={setDateTime} />
+      )}
+
       <div>
         <Label className="text-lg font-semibold mb-3 block">Cantidad</Label>
         <RadioGroup value={amount} onValueChange={(v) => setAmount(v as any)}>
