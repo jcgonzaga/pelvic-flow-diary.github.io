@@ -118,15 +118,15 @@ export function ExportDialog({ open, onOpenChange, records }: ExportDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+      <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-2xl">📤 Exportar y Compartir</DialogTitle>
           <DialogDescription>
             Selecciona el rango de fechas y el método para compartir tus datos
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto flex-1 pr-2 -mr-2">
           <div>
             <Label className="text-lg font-semibold mb-3 block">Formato de resumen</Label>
             <RadioGroup value={shareFormat} onValueChange={(v) => {
