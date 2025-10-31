@@ -4,10 +4,18 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
-import { FluidIntakeRecord } from '@/types/record';
+import { FluidIntakeRecord, ContainerType } from '@/types/record';
 import { DateTimePicker } from '@/components/DateTimePicker';
 
-const QUICK_AMOUNTS = [100, 200, 250, 330, 500];
+const CONTAINERS = [
+  { value: 'espresso' as ContainerType, label: '☕ Café expreso', amount: 60 },
+  { value: 'coffee-cup' as ContainerType, label: '☕ Taza café', amount: 200 },
+  { value: 'glass' as ContainerType, label: '🥛 Vaso', amount: 250 },
+  { value: 'small-bottle' as ContainerType, label: '🧃 Botellita', amount: 330 },
+  { value: 'bottle' as ContainerType, label: '🍾 Botella', amount: 500 },
+  { value: 'large-bottle' as ContainerType, label: '🍾 Botella grande', amount: 1000 },
+];
+
 const DRINK_TYPES = [
   { value: 'water', label: '💧 Agua' },
   { value: 'coffee', label: '☕ Café' },
@@ -23,7 +31,7 @@ interface FluidIntakeFormProps {
 }
 
 export function FluidIntakeForm({ onSave, onCancel }: FluidIntakeFormProps) {
-  const [amount, setAmount] = useState(250);
+  const [container, setContainer] = useState<ContainerType>('glass');
   const [customAmount, setCustomAmount] = useState('');
   const [drinkType, setDrinkType] = useState<FluidIntakeRecord['drinkType']>('water');
   const [useCustom, setUseCustom] = useState(false);
@@ -35,11 +43,15 @@ export function FluidIntakeForm({ onSave, onCancel }: FluidIntakeFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalAmount = useCustom ? parseInt(customAmount) || 0 : amount;
+    const finalAmount = useCustom 
+      ? parseInt(customAmount) || 0 
+      : CONTAINERS.find(c => c.value === container)?.amount || 0;
+    
     onSave(
       {
         type: 'fluid-intake',
         amount: finalAmount,
+        container: useCustom ? 'custom' : container,
         drinkType,
       },
       manualDateTime ? dateTime : undefined
@@ -64,38 +76,39 @@ export function FluidIntakeForm({ onSave, onCancel }: FluidIntakeFormProps) {
       )}
 
       <div>
-        <Label className="text-lg font-semibold mb-3 block">Cantidad (ml)</Label>
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {QUICK_AMOUNTS.map(amt => (
+        <Label className="text-lg font-semibold mb-3 block">Contenedor</Label>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          {CONTAINERS.map(cont => (
             <Button
-              key={amt}
+              key={cont.value}
               type="button"
-              variant={!useCustom && amount === amt ? "default" : "outline"}
-              className="h-14 text-lg"
+              variant={!useCustom && container === cont.value ? "default" : "outline"}
+              className="h-16 text-sm flex flex-col items-center justify-center gap-1"
               onClick={() => {
-                setAmount(amt);
+                setContainer(cont.value);
                 setUseCustom(false);
               }}
             >
-              {amt}ml
+              <span className="text-lg">{cont.label}</span>
+              <span className="text-xs opacity-70">{cont.amount}ml</span>
             </Button>
           ))}
-          <Button
-            type="button"
-            variant={useCustom ? "default" : "outline"}
-            className="h-14 text-lg"
-            onClick={() => setUseCustom(true)}
-          >
-            ✏️ Otro
-          </Button>
         </div>
+        <Button
+          type="button"
+          variant={useCustom ? "default" : "outline"}
+          className="w-full h-14 text-lg"
+          onClick={() => setUseCustom(true)}
+        >
+          ✏️ Cantidad personalizada
+        </Button>
         {useCustom && (
           <Input
             type="number"
-            placeholder="Cantidad personalizada..."
+            placeholder="Cantidad en ml..."
             value={customAmount}
             onChange={(e) => setCustomAmount(e.target.value)}
-            className="h-14 text-lg"
+            className="h-14 text-lg mt-3"
             autoFocus
           />
         )}

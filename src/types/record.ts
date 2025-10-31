@@ -8,9 +8,12 @@ export interface BaseRecord {
   time: string;
 }
 
+export type ContainerType = 'espresso' | 'coffee-cup' | 'glass' | 'small-bottle' | 'bottle' | 'large-bottle' | 'custom';
+
 export interface FluidIntakeRecord extends BaseRecord {
   type: 'fluid-intake';
   amount: number;
+  container: ContainerType;
   drinkType: 'water' | 'coffee' | 'tea' | 'soda' | 'alcohol' | 'other';
 }
 
